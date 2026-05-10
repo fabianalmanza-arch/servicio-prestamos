@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>Gestión de Pagos</title>
+
+        <!-- NUEVA FUENTE -->
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+        <link rel="stylesheet" th:href="@{/css/styles.css}">
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"> 
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+        <link rel="icon" type="image/png" th:href="@{/images/solologo.png}">
+        <link rel="stylesheet" th:href="@{/css/finanzas.css}">
+    </head>
+
+    <body>
+
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+        <div class="container">
+
+            <h1>Gestión de Pagos</h1>
+
+            <div class="d-flex justify-content-between align-items-center mt-3 mb-3 flex-wrap">
+                <button class="btn btn-primary mb-2 mb-md-0" onclick="abrirModal()">+ Nuevo Pago</button>
+
+                <form method="get" th:action="@{/pagos}" class="d-flex" style="max-width: 320px;">
+                    <input type="text" name="search" th:value="${search}" 
+                           class="form-control form-control-sm me-2" 
+                           placeholder="Buscar cliente o préstamo (ej: CLI_001)">
+                    <button type="submit" class="btn btn-outline-primary btn-sm">Buscar</button>
+                </form>
+            </div>
+
+            <table class="table mt-3">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Código Cliente</th>
+                        <th>Cliente</th>
+                        <th>Préstamo</th>
+                        <th>Monto</th>
+                        <th>Fecha</th>
+                        <th>Método</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="pago : ${pagos}">
+                        <td th:text="${pago.id}"></td>
+                        <td th:text="${pago.prestamo.cliente.codigoCliente}"></td>
+                        <td th:text="${pago.prestamo.cliente.nombreCompleto}"></td>
+                        <td th:text="${'#' + pago.prestamo.id}"></td>
+                        <td th:text="${pago.monto}"></td>
+                        <td th:text="${pago.fechaPago != null ? pago.fechaPago.toString() : ''}"></td>
+                        <td th:text="${pago.metodoPago}"></td>
+                        <td>
+                            <button class="btn btn-primary"
+                                    th:onclick="'editarPago(' + ${pago.id} + ')'">Editar</button>
+
+                            <button class="btn btn-danger"
+                                    th:attr="onclick=|confirmarEliminacion('${pago.id}')|">
+                                Eliminar
+                            </button>
+
+                            <a th:href="@{'/pagos/factura/' + ${pago.id}}" 
+                               class="btn btn-success" target="_blank">
+                                Factura
+                            </a>
+
+                            <button type="button" class="btn btn-info"
+                                    th:if="${pago.baucher != null}"
+                                    th:attr="onclick=|verBaucher('${pago.id}')|">
+                                Ver Baucher
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+        <!-- ======================================= -->
+        <!--=============== MODAL (Bootstrap) =======-->
+        <!-- ======================================= -->
+        <div class="modal fade" id="modalPago" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content shadow-sm border-0">
+
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title" id="tituloModal">Nuevo Pago</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <form id="formPago" th:action="@{/pagos/guardar}" method="post">
+                            <input type="hidden" name="id" id="id">
+
+                            <!-- BUSCADOR -->
+                            <label class="form-label">Préstamo:</label>
+                            <input type="text" id="buscarPrestamo" class="form-control mb-2"
+                                   placeholder="Buscar por nombre o # préstamo">
+
+                            <ul class="list-group" id="listaPrestamos"
+                                style="display:none; max-height:200px; overflow-y:auto;"></ul>
+
+                            <input type="hidden" name="prestamoId" id="prestamoId">
+
+                            <label class="form-label mt-3">Debe Actualmente:</label>
+                            <input type="text" id="debeActual" class="form-control" readonly style="background:#f0f0f0">
+
+                            <label class="form-label mt-3">Fecha de Pago:</label>
+                            <input type="date" name="fechaPago" id="fechaPago" class="form-control" required>
+
+                            <label class="form-label mt-3">Método de Pago:</label>
+                            <select name="metodoPago" id="metodoPago" class="form-select" required>
+                                <option value="">Seleccione...</option>
+                                <option value="efectivo">Efectivo</option>
+                                <option value="transferencia">Transferencia</option>
+                                <option value="mixto">Mixto</option>
+                            </select>
+
+                            <!-- EFECTIVO -->
+                            <div id="campoEfectivo" class="mt-2" style="display:none;">
+                                <label class="form-label">Monto en Efectivo:</label>
+                                <input type="number" class="form-control" name="montoEfectivo" id="montoEfectivo">
+                            </div>
+
+                            <!-- TRANSFERENCIA -->
+                            <div id="campoTransferencia" class="mt-2" style="display:none;">
+                                <label class="form-label">Monto en Transferencia:</label>
+                                <input type="number" class="form-control" name="montoTransferencia" id="montoTransferencia">
+
+                                <label class="form-label mt-2">Número de Operación:</label>
+                                <input type="text" class="form-control" name="numeroOperacion" id="numeroOperacion">
+                                <div id="errorNumOperacion" class="text-danger small mt-1" style="display:none;">
+                                    Este número de operación ya existe.
+                                </div>
+                            </div>
+
+                            <div id="campoBanco" class="mt-2" style="display:none;">
+                                <label class="form-label">Banco:</label>
+                                <select class="form-select" name="banco" id="banco">
+                                    <option value="">Seleccione...</option>
+                                    <option value="BCP">BCP</option>
+                                    <option value="Interbank">Interbank</option>
+                                    <option value="Plin">Plin</option>
+                                </select>
+                            </div>
+
+                            <!-- Ingresar baucher -->
+                            <div id="campoBaucher" class="mt-2" style="display:none;">
+                                <label class="form-label">Comprobante (Baucher):</label>
+                                <input type="file" class="form-control" name="baucher" id="baucher" accept="image/*">
+                                <img id="vistaBaucher" src="#" alt="Vista del baucher" class="img-fluid mt-2" style="display:none; max-height:200px;">
+                            </div>
+
+                            <div class="mt-4 text-end">
+                                <button type="submit" class="btn btn-success">Guardar</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL VER BAUCHER -->
+        <div class="modal fade" id="modalBaucher" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title">Comprobante del Pago</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <img id="imagenBaucher" src="" class="img-fluid rounded shadow-sm" alt="Baucher">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script th:if="${mensajeExito}">
+            Swal.fire({
+            icon: 'success',
+            title: 'Éxito',
+            text: [[${mensajeExito}]]
+            });
+        </script>
+
+        <script th:if="${mensajeError}">
+            Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: [[${mensajeError}]]
+            });
+        </script>
+
+        <script>
+            function verBaucher(id) {
+            const img = document.getElementById("imagenBaucher");
+            img.src = `/pagos/baucher/${id}?t=` + new Date().getTime(); // Evita caché
+            const modal = new bootstrap.Modal(document.getElementById("modalBaucher"));
+            modal.show();
+            }
+        </script>
+
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            /* ======================= */
+            /*   MODAL Bootstrap Init  */
+            /* ======================= */
+            const modalPago = new bootstrap.Modal(document.getElementById("modalPago"));
+
+            /* ======================= */
+            /*   NUEVO PAGO            */
+            /* ======================= */
+            function abrirModal() {
+            document.getElementById("formPago").reset();
+            document.getElementById("id").value = "";
+            document.getElementById("tituloModal").textContent = "Nuevo Pago";
+            document.getElementById("listaPrestamos").style.display = "none";
+            document.getElementById("debeActual").value = "";
+            modalPago.show();
+            }
+
+            /* ======================= */
+            /*  BUSCADOR DE PRÉSTAMO   */
+            /* ======================= */
+            document.getElementById("buscarPrestamo").addEventListener("input", async function () {
+            const texto = this.value.trim();
+            const lista = document.getElementById("listaPrestamos");
+
+            if (texto.length < 2) {
+            lista.style.display = "none";
+            lista.innerHTML = "";
+            return;
+            }
+
+            const resp = await fetch(`/prestamos/buscar?query=${encodeURIComponent(texto)}`);
+            const prestamos = await resp.json();
+
+            lista.innerHTML = "";
+            lista.style.display = "block";
+
+            prestamos.forEach(p => {
+            const li = document.createElement("li");
+            li.classList.add("list-group-item");
+            li.innerHTML = `
+            <strong>${p.clienteNombre}</strong>
+            <br>Préstamo #${p.id}
+            <br><small>Fecha: ${p.fecha}</small>
+            `;
+
+            li.onclick = async () => {
+            document.getElementById("prestamoId").value = p.id;
+            document.getElementById("buscarPrestamo").value =
+            `${p.clienteNombre} | #${p.id}`;
+            lista.style.display = "none";
+
+            // Obtener deuda total actualizada
+            const r2 = await fetch(`/api/cronogramas/deuda-total/${p.id}`);
+            const data = await r2.json();
+            document.getElementById("debeActual").value = data.deuda;
+            };
+            lista.appendChild(li);
+            });
+            });
+
+            /* ======================= */
+            /*   MÉTODO DE PAGO        */
+            /* ======================= */
+            document.getElementById("metodoPago").addEventListener("change", () => {
+            const tipo = document.getElementById("metodoPago").value;
+            const campoEfectivo = document.getElementById("campoEfectivo");
+            const campoTransferencia = document.getElementById("campoTransferencia");
+            const campoBanco = document.getElementById("campoBanco");
+
+            campoEfectivo.style.display = "none";
+            campoTransferencia.style.display = "none";
+            campoBanco.style.display = "none";
+
+            if (tipo === "efectivo") {
+            campoEfectivo.style.display = "block";
+            } else if (tipo === "transferencia") {
+            campoTransferencia.style.display = "block";
+            campoBanco.style.display = "block";
+            } else if (tipo === "mixto") {
+            campoEfectivo.style.display = "block";
+            campoTransferencia.style.display = "block";
+            campoBanco.style.display = "block";
+            }
+            });
+
+            /* ======================= */
+            /*     EDITAR PAGO         */
+            /* ======================= */
+            async function editarPago(id) {
+            try {
+            const resp = await axios.get(`/pagos/${id}`);
+            const p = resp.data;
+
+            document.getElementById("formPago").reset();
+            document.getElementById("id").value = p.id;
+            document.getElementById("buscarPrestamo").value =
+            `${p.prestamo.cliente.nombreCompleto} | #${p.prestamo.id}`;
+            document.getElementById("prestamoId").value = p.prestamo.id;
+
+            const r2 = await fetch(`/api/cronogramas/deuda-total/${p.prestamo.id}`);
+            const data = await r2.json();
+            document.getElementById("debeActual").value = data.deuda;
+
+            document.getElementById("fechaPago").value = p.fechaPago;
+            document.getElementById("metodoPago").value = p.metodoPago;
+            document.getElementById("metodoPago").dispatchEvent(new Event("change"));
+
+            if (p.montoEfectivo) document.getElementById("montoEfectivo").value = p.montoEfectivo;
+            if (p.montoTransferencia) document.getElementById("montoTransferencia").value = p.montoTransferencia;
+            if (p.numeroOperacion) document.getElementById("numeroOperacion").value = p.numeroOperacion;
+            if (p.banco) document.getElementById("banco").value = p.banco;
+            const campoBaucher = document.getElementById("campoBaucher");
+            const vistaBaucher = document.getElementById("vistaBaucher");
+
+            if (p.baucher && p.baucher.trim() !== "") {
+            vistaBaucher.src = `data:image/png;base64,${p.baucher}`;
+            vistaBaucher.style.display = "block";
+            campoBaucher.style.display = "block";
+            } else {
+            vistaBaucher.src = "#";
+            vistaBaucher.style.display = "none";
+            }
+
+            document.getElementById("tituloModal").textContent = "Editar Pago";
+            modalPago.show();
+
+            } catch (err) {
+            console.error("Error al cargar el pago:", err);
+            Swal.fire("Error", "No se pudo cargar el pago para editarlo.", "error");
+            }
+            }
+
+            /* ======================= */
+            /*     ELIMINAR PAGO       */
+            /* ======================= */
+            function confirmarEliminacion(id) {
+            Swal.fire({
+            title: "¿Estás seguro?",
+            text: "Este pago se eliminará permanentemente.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Sí, eliminar",
+            cancelButtonText: "Cancelar"
+            }).then((result) => {
+            if (result.isConfirmed) {
+            window.location.href = `/pagos/eliminar/${id}`;
+            }
+            });
+            }
+            /* ======================= */
+            /*   MOSTRAR BAUCHER       */
+            /* ======================= */
+            document.getElementById("baucher").addEventListener("change", function () {
+            const file = this.files[0];
+            if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+            const base64 = e.target.result.split(",")[1];
+            document.getElementById("vistaBaucher").src = e.target.result;
+            document.getElementById("vistaBaucher").style.display = "block";
+
+            // Crea o actualiza un input oculto con el base64
+            let inputHidden = document.getElementById("baucherBase64");
+            if (!inputHidden) {
+            inputHidden = document.createElement("input");
+            inputHidden.type = "hidden";
+            inputHidden.name = "baucherBase64";
+            inputHidden.id = "baucherBase64";
+            document.getElementById("formPago").appendChild(inputHidden);
+            }
+            inputHidden.value = base64;
+            };
+            reader.readAsDataURL(file);
+            }
+            });
+
+            // Mostrar campo baucher según método
+            document.getElementById("metodoPago").addEventListener("change", () => {
+            const tipo = document.getElementById("metodoPago").value;
+            const campoBaucher = document.getElementById("campoBaucher");
+            if (tipo === "transferencia" || tipo === "mixto") {
+            campoBaucher.style.display = "block";
+            } else {
+            campoBaucher.style.display = "none";
+            }
+            });
+
+            // ✅ Validar si está repetido el número de operación y evitar cierre del modal
+            document.getElementById("formPago").addEventListener("submit", async function (event) {
+            event.preventDefault(); // 🚫 Detiene el envío desde el inicio
+
+            const metodo = document.getElementById("metodoPago").value;
+            const numOperacionInput = document.getElementById("numeroOperacion");
+            const numOperacion = numOperacionInput.value.trim();
+            const errorLabel = document.getElementById("errorNumOperacion");
+
+            // Limpiar errores previos
+            numOperacionInput.classList.remove("is-invalid");
+            errorLabel.style.display = "none";
+
+            // Solo valida si es transferencia o mixto
+            if (metodo === "transferencia" || metodo === "mixto") {
+            if (!numOperacion) {
+            numOperacionInput.classList.add("is-invalid");
+            errorLabel.textContent = "Campo obligatorio.";
+            errorLabel.style.display = "block";
+            return; // ❌ no envía
+            }
+
+            // Llamada al backend
+            const resp = await fetch(`/pagos/validar-operacion?numero=${encodeURIComponent(numeroOperacion)}`);
+            const existe = await resp.json();
+
+            if (existe) {
+            numOperacionInput.classList.add("is-invalid");
+            errorLabel.textContent = "Este número de operación ya existe.";
+            errorLabel.style.display = "block";
+            return; // ❌ no envía
+            }
+            }
+
+            // ✅ Si pasa validación, enviamos manualmente el formulario
+            this.submit();
+            });
+
+        </script>
+    </body>
+</html>

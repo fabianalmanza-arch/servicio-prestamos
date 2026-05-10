@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Contrato de Mutuo</title>
+      <style>
+        @page {
+            margin: 100px 60px 100px 60px;
+            @top-center {
+              content: element(header);
+            }
+            @bottom-center {
+              content: element(footer);
+            }
+        }
+
+        body {
+          font-family: "Times New Roman", serif;
+          font-size: 12pt;
+          line-height: 1.5;
+          text-align: justify;
+        }
+
+        header {
+            position: running(header);
+            text-align: center;
+            border-bottom: 1px solid #000;
+            padding-bottom: 5px;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .header-content img {
+            height: 45px;
+        }
+
+        .header-content h1 {
+            font-size: 16pt;
+            margin: 0;
+        }
+
+        footer {
+            position: running(footer);
+            font-size: 10pt;
+            color: #444;
+            border-top: 1px solid #000;
+            text-align: center;
+            padding-top: 5px;
+        }
+
+        h2 {
+          text-align: center;
+          font-size: 14pt;
+          margin-bottom: 8px;
+        }
+
+        .firma {
+          margin-top: 50px;
+          text-align: center;
+          font-weight: bold;
+        }
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 15px;
+          font-size: 11pt;
+        }
+
+        table, th, td {
+          border: 1px solid #000;
+        }
+
+        th, td {
+          padding: 4px;
+          text-align: left;
+        }
+
+        .page-break {
+          page-break-before: always;
+        }
+
+        .cronograma {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .cronograma th, .cronograma td {
+            border: 1px solid #000;
+            padding: 4px 6px;
+            font-size: 11px;
+            text-align: center;
+        }
+        .cronograma th {
+            background-color: #f2f2f2;
+        }
+
+      </style>
+    </head>
+
+    <body>
+        <header>
+            <div class="header-content">
+              <img src="file:src/main/resources/static/images/LogoContrato.jpg" alt="Logo" />
+              <h1>INVERSIONES ANYELO S.A.C.</h1>
+            </div>
+        </header>
+
+        <footer>
+            <div class="footer-content">
+                INVERSIONES ANYELO S.A.C. — RUC 20611854359<br />
+                Villa Club 5 Mz H Lt 10, Carabayllo – Lima<br />
+            </div>
+        </footer>
+
+        <main>
+            <h2>CONTRATO DE MUTUO</h2>
+
+            <p>Este contrato regula las condiciones, generales y especiales, aplicables a los préstamos de dinero de EL CLIENTE con <strong>INVERSIONES ANYELO S.A.C.</strong></p>
+
+            <p>
+              Conste por el presente documento, el CONTRATO DE MUTUO que celebran de una parte, <strong>INVERSIONES ANYELO S.A.C.</strong>, identificado con RUC número 20611854359,
+              inscrito en el Registro de Empresas y personas que efectúan Operaciones Financieras o de Cambio de Moneda por Resolución Nº 03270-2024/SBS de fecha 16 de septiembre de 2024,
+              con domicilio en Villa Club 5 Mz H Lt 10, distrito de Carabayllo, provincia y departamento de Lima, a quien en lo sucesivo se denominará EL MUTUANTE; y de la otra parte
+              <strong th:text="${nombre}"></strong>, de nacionalidad Peruana, identificado con documento DNI número <strong th:text="${dni}"></strong>, con domicilio en <strong th:text="${direccion}"></strong>, provincia y departamento de Lima,
+              a quien en lo sucesivo se denominará EL CLIENTE.
+            </p>
+
+            <p>Ambas partes se reconocen la capacidad legal necesaria para formalizar el presente contrato en los siguientes términos y condiciones:</p>
+
+            <h3>PRIMERA: CONDICIONES GENERALES</h3>
+            <p>
+              1.1 DOCUMENTOS DEL CONTRATO.– El contrato está conformado por:
+              <br />– La declaración de datos de EL CLIENTE (Anexo 1), siendo esta una declaración jurada, asumiendo EL CLIENTE responsabilidad por cualquier error u omisión.
+              <br />– Cronograma de pagos (Anexo 2).
+            </p>
+
+            <p>
+              1.2 MODALIDADES DE CONTRATACIÓN.– INVERSIONES ANYELO S.A.C. podrá poner a disposición de EL CLIENTE diversos canales de contratación como oficinas, llamadas,
+              página web, videoconferencias o videollamadas entre otros mecanismos electrónicos de contratación. INVERSIONES ANYELO S.A.C. verificará la identidad de EL CLIENTE
+              dejando constancia de su aceptación a través de las herramientas que tenga implementadas, conforme al marco legal aplicable.
+            </p>
+
+            <h3>SEGUNDA: OBJETO DEL CONTRATO</h3>
+            <p>
+              EL MUTUANTE otorga a EL CLIENTE la suma de S/ <strong th:text="${total}"></strong> (<strong th:text="${total_letras}"></strong>  y 00/100 Soles) en calidad de préstamo para que sea destinado a los fines que EL CLIENTE estime conveniente.
+              EL CLIENTE acepta el préstamo y se compromete a devolver la referida suma de dinero en la forma y oportunidad pactadas en la cláusula TERCERA.
+            </p>
+
+            <h3>TERCERA: PLAZO Y FORMA DE PAGO</h3>
+            <p>
+              Las partes de mutuo acuerdo establecieron que el préstamo será cancelado por EL CLIENTE en los plazos y montos pactados en el anexo 2 del presente contrato.
+              La devolución del préstamo, junto con los intereses correspondientes, se realizará mediante depósitos o transferencias bancarias a la cuenta N° 1911576025043
+              en el Banco de Crédito del Perú o por aplicativo de pago.
+            </p>
+
+            <h3>CUARTA: PAGOS ANTICIPADOS Y ADELANTO DE CUOTAS</h3>
+            <p>EL CLIENTE podrá realizar pagos por encima de la cuota exigible del periodo, ya sea a través de pagos anticipados o adelantos de cuotas, 
+                en forma total o parcial, sin condiciones, limitaciones, comisiones o penalidades de ningún tipo considerando para ello lo siguiente:</p>
+
+            <p>
+                <b/> - Pago anticipado: conlleva a la aplicación del monto al capital del crédito, con la consiguiente reducción de los intereses, comisiones y gastos al día del pago. 
+                    Los pagos mayores a dos cuotas (incluyendo la exigible en el periodo) se consideran pagos anticipados, en este caso deberá abonar solo gastos administrativos ascendientes a        
+                    S/ ………………. (………………………………..………………..y 00/100 Soles).
+                <b/> -	El adelanto de cuotas: Supone la aplicación del monto pagado a las cuotas inmediatamente posteriores a la exigible en el periodo, sin que se produzca una reducción de los intereses, 
+                    comisiones y gastos al día del pago. Los pagos menores o iguales a dos cuotas (que incluyen aquella exigible en el periodo) se consideran adelanto de cuotas.
+            </p>
+
+            <h3>QUINTA: RESOLUCIÓN DEL CONTRATO POR INCUMPLIMIENTO DE PAGO Y OTROS.</h3>
+            <p>
+                INVERSIONES ANYELO S.A.C. podrá dar por vencidos todos los plazos del préstamo, resolviendo el contrato. Para que surta efectos la resolución bastará que ésta sea comunicada a EL CLIENTE a 
+                través de alguno de los medios directos previstos en el contrato, por lo menos con un día de anticipación.
+            </p>
+            <p>
+                Las causales que permitirán a INVERSIONES ANYELO S.A.C. resolver de pleno derecho el presente contrato son las siguientes:
+            </p>
+            <p>
+                5.1. Si vencido el plazo de la obligación asumida por el cliente frente a INVERSIONES ANYELO S.A.C. no hubiera cumplido con efectuar el pago respectivo.
+            </p>
+            <p>
+                5.2. Si el cliente es sometido a proceso concursal, suspensión de pagos o cualesquiera otras circunstancias que, a juicio de INVERSIONES ANYELO S.A.C. 
+                pudiera afectar el normal cumplimiento de las obligaciones asumidas por EL CLIENTE.
+            </p>
+            <p>
+                5.3. Si el cliente incumple cualquiera de las obligaciones asumidas en el contrato.
+            </p>
+            <p>
+                5.4. Otras que sean permitidas por Ley y que INVERSIONES ANYELO S.A.C. pueda llegar a implementar comunicando oportunamente a EL CLIENTE.
+            </p>
+
+            <h3>SEXTA: INTERESES COMISIONES Y GASTOS.</h3>
+            <p>
+                INVERSIONES ANYELO S.A.C. cobrará a EL CLIENTE la tasa de interés efectivo compensatorio (fija), la penalidad por mora o en su defecto, los intereses moratorios, 
+                así como las comisiones, impuestos y gastos, en los porcentajes, montos y periodicidad indicados en la hoja resumen.
+            </p>
+            <p>
+                En caso de incumplimiento en el pago de las cuotas  EL CLIENTE incurra en mora automática, generando diariamente respecto de las sumas adeudadas las penalidades o intereses moratorios, 
+                de forma adicional al interés compensatorio pactado. Los mismos que se detallan en el anexo Nº 2. En este contexto, EL CLIENTE auto operación e irrevocablemente a INVERSIONES ANYELO S.A.C. para que esté, 
+                a su solo criterio y en el marco de su facultad legal de compensación, pueda aplicar a la amortización y/o cancelación de las cuotas vencidas y exigibles del saldo deudor o del importe total del mismo, cualquier suma, 
+                valor o bien que tuviera en su poder a nombre del CLIENTE bajo cualquier modalidad y sin reserva ni limitación alguna, incluyendo aquellas sumas, valores o bienes que estén destinados a ser entregados o abonados al CLIENTE, 
+                sin importar el fin para el cual estén destinados, y cualquiera sea la oportunidad en que se efectúe la operación.. Del mismo modo, no serán objeto de compensación los activos legal o 
+                contractualmente declarados intangibles o excluidos de este derecho.
+            </p>
+            <h3>SÉPTIMA: INFORMACIÓN MÍNIMA.</h3>
+            <p>
+                El cliente se compromete a proporcionar a INVERSIONES ANYELO S.A.C. aquella información mínima requerida por esta última para el seguimiento, control, evaluación y clasificación del préstamo conferido a EL CLIENTE 
+                de acuerdo con los criterios internos que INVERSIONES ANYELO S.A.C. tenga establecidos.
+            </p>
+            <h3>OCTAVA: MEDIOS DE COMUNICACIÓN.</h3>
+            <p>
+                Las comunicaciones que INVERSIONES ANYELO S.A.C. le curse a EL CLIENTE durante la ejecución del contrato, podrán realizarse a través de comunicaciones al domicilio, correo electrónico, llamadas telefónicas, mensajes de texto SMS 
+                o mensajería instantánea al número de teléfono móvil de EL CLIENTE; considerando para ello la información declarada por este en la declaración de datos.
+            </p>
+            <h3>NOVENA: CESIÓN.</h3>
+            <p>
+                EL CLIENTE autoriza a INVERSIONES ANYELO S.A.C. para que esta última pueda ceder o transferir total o parcialmente todos los derechos y obligaciones derivados del contrato en favor de un tercero. No será necesaria la comunicación de 
+                fecha cierta a EL CLIENTE para que la cesión surta efectos. Asimismo INVERSIONES ANYELO S.A.C. podrá afectar o dar en garantía, cualquiera que sea la forma que esté prevista, los derechos que el contrato le confiere 
+                en aplicación de los artículos 1206º y 1211º del Código Civil. Inversiones Anyelo comunicará al cliente mediante comunicación telefónica o correo electrónico la cesión de derechos con carácter informativo. 
+                EL CLIENTE por su parte no podrá ceder su posición contractual a terceros, salvo sea autorizado por INVERSIONES ANYELO S.A.C.
+            </p>
+
+            <h3>DÉCIMA: COMPETENCIA TERRITORIAL.</h3>
+            <p>
+                Para efectos de cualquier controversia que se genere con motivo de la celebración y ejecución de este contrato, las partes se someten a la competencia territorial de los jueces 
+                y tribunales de la ciudad de Lima Centro. 
+            </p>
+
+            <h3>DÉCIMA PRIMERA: DOMICILIO.</h3>
+            <p>
+                Para la validez de todas las comunicaciones y notificaciones a las partes, con motivo de la ejecución de este contrato, ambas señalan como sus respectivos domicilios los indicados en la introducción 
+                de este documento. El cambio de domicilio de cualquiera de las partes surtirá efecto desde la fecha de comunicación de dicho cambio a la otra parte, por cualquier medio escrito.
+            </p>
+
+            <h3>DÉCIMA SEGUNDA: APLICACIÓN SUPLETORIA DE LA LEY.</h3>
+            <p>
+                En lo no previsto por las partes en el presente contrato, ambas se someten a lo establecido por las normas del Código Civil y demás del sistema jurídico que resulten aplicables.
+                En señal de conformidad las partes suscriben este documento en la ciudad de Lima, a la fecha <strong th:text="${fecha}"></strong>
+            </p>
+
+
+            <div class="firma">
+                <!-- Firma del cliente -->
+                <div th:if="${firmaRuta}">
+                    <img th:src="${firmaRuta}" alt="Firma del cliente" style="max-height:80px;"/>
+                </div>
+                <div th:unless="${firmaRuta}">
+                    <p>Sin firma disponible</p>
+                </div>
+                 <p>______________________________</p><br />
+                <strong th:text="${nombre}"></strong><br />
+
+                <img src="images/gerenteFirma.jpg" style="height: 70px;" /><br />
+                  ________________________________<br />
+                INVERSIONES ANYELO S.A.C.<br />
+            </div>
+
+            <div class="page-break"></div>
+
+            <h3>ANEXO 1 — DECLARACIÓN DE DATOS DEL CLIENTE</h3>
+            <p>
+              Yo, <strong th:text="${nombre}"></strong>, de nacionalidad Peruana, identificada con documento nacional de identidad número <strong th:text="${dni}"></strong>, con domicilio en 
+              <strong th:text="${direccion}"></strong>, provincia y departamento de Lima, 
+              declaro bajo juramento que los datos consignados en el presente documento son verídicos y exactos. Asimismo, asumo plena responsabilidad por cualquier error u omisión en la información proporcionada.
+            </p>
+
+            <p>
+                <b/> Nombres y Apellidos: <strong th:text="${nombre}"></strong><br/>
+                <b/> DNI: <strong th:text="${dni}"></strong><br/>
+                <b/> Domicilio: <strong th:text="${direccion}"></strong><br/>
+                <b/> Teléfono: <strong th:text="${telefono}"></strong><br/>
+            </p>
+
+            <div class="firma">
+              <!-- Firma del cliente -->
+                <div th:if="${firmaRuta}">
+                    <img th:src="${firmaRuta}" alt="Firma del cliente" style="max-height:80px;"/>
+                </div>
+                <div th:unless="${firmaRuta}">
+                    <p>Sin firma disponible</p>
+                </div>
+                 <p>______________________________</p><br />
+                <strong th:text="${nombre}"></strong><br />
+            </div>
+
+            <div class="page-break"></div>
+
+            <h3>ANEXO 2 — CRONOGRAMA DE PAGOS</h3>
+            <p>
+              Cliente: <strong th:text="${nombre}"></strong><br />
+              DNI: <strong th:text="${dni}"></strong><br />
+              Monto del préstamo: S/ <strong th:text="${total}"></strong><br />
+              Número de cuotas: <strong th:text="${dias}"></strong><br />
+              Fecha de inicio: <strong th:text="${fecha_inicio}"></strong><br />
+              Fecha de vencimiento: <strong th:text="${fecha_fin}"></strong><br />
+              Detalle de Cuotas: <strong th:text="${cuota_diaria}"></strong>
+            </p>
+
+            <table border="1" style="width:100%; border-collapse: collapse;">
+                <thead>
+                  <tr>
+                    <th>Semana</th>
+                    <th>Fecha de Vencimiento</th>
+                    <th>Monto de la Cuota</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="semana : ${semanas}">
+                    <td th:text="${semana.nombre}"></td>
+                    <td th:text="${semana.fecha_vencimiento}"></td>
+                    <td th:text="${semana.monto}"></td>
+                  </tr>
+                </tbody>
+            </table>
+
+
+
+            <div class="firma">
+              <!-- Firma del cliente -->
+                <div th:if="${firmaRuta}">
+                    <img th:src="${firmaRuta}" alt="Firma del cliente" style="max-height:80px;"/>
+                </div>
+                <div th:unless="${firmaRuta}">
+                    <p>Sin firma disponible</p>
+                </div>
+                 <p>______________________________</p><br />
+                <strong th:text="${nombre}"></strong><br />
+                <img src="images/gerenteFirma.jpg" style="height: 70px;" /><br />
+                ________________________________<br />
+                INVERSIONES ANYELO S.A.C.<br />
+                MARIA EUGENIA PULGAR IBAÑEZ
+            </div>
+
+            <div class="page-break"></div>
+
+            <h3>PAGARÉ Nº</h3>
+            <p>
+                <b/> <strong>LUGAR Y FECHA DE EMISIÓN:</strong> <strong th:text="${fecha}"></strong><br/>
+                <b/> <strong>FECHA DE VENCIMIENTO:</strong> <strong th:text="${fecha_fin}"></strong><br/>
+            </p>
+
+            <p>
+                En virtud del presente Pagaré, emitido de acuerdo con la Ley Nº 27287, Ley de Títulos Valores, quien suscribe el presente documento, 
+                debo y me obligo a pagar en forma incondicional, en la fecha de vencimiento indicada en la introducción de este Pagaré (fecha de vencimiento), 
+                mediante fondos disponibles de inmediato, a la orden de INVERSIONES ANYELO S.A.C identificada con RUC Nº 20611854359, la suma de S/ <strong th:text="${total}"></strong> 
+                ( <strong th:text="${fecha_fin}"></strong><br/> y 00/100 Soles).<br />
+
+                De igual modo, me obligo incondicionalmente a pagar al acreedor, un interés compensatorio equivalente a la tasa efectiva mensual de 10% el 
+                cual se devengará sobre el monto del principal insoluto de este Pagaré a partir de la fecha de vencimiento del presente Pagaré hasta la fecha efectiva de su pago total; y 
+                Asimismo, en caso de incumplimiento del pago de nuestras obligaciones, me obligo incondicionalmente a pagar al acreedor, un interés moratorio equivalente a la tasa efectiva 
+                mensual de 10% aplicable sobre los importes del principal en mora, el cual se devengará de manera adicional al interés compensatorio y en forma automática desde la fecha de 
+                vencimiento y hasta la fecha efectiva de su pago total.<br />
+
+                Se deja establecido que el sólo hecho de que no cumpla con el pago de la suma de dinero adeudada a la fecha de presentación de este Pagaré para su pago, determinará que incurra 
+                en mora en forma automática, sin necesidad de requerimiento o intimación adicional alguna por parte del Acreedor de este Pagaré. Para este efecto, dejo establecido que el presente 
+                Pagaré es emitido conteniendo la cláusula “sin protesto” la cual libera al Acreedor de este Pagaré, o sus endosatarios, de la necesidad de efectuar y cumplir esta formalidad para ejercitar 
+                las acciones derivadas de este título valor. Sin embargo, el Acreedor queda facultado a protestarlo por falta de pago si así lo estimare conveniente; caso en el que asumiré los gastos de tal 
+                diligencia notarial o de la formalidad sustitutoria correspondiente. El protesto podrá ser efectuado mediante notificación que se curse al domicilio del Cliente consignado en este Pagaré.<br />
+
+                En caso de ejecución del presente Pagaré o de realización de cualquier gestión de cobranza del mismo, me obligo a pagar las costas (incluidos los honorarios profesionales de abogados), 
+                los costos y los demás gastos en los que tuviese que incurrir el Acreedor de este título valor para efectos de lograr su cobranza, obligándome a pagar sobre dichos gastos los mismos 
+                intereses compensatorios y moratorios pactados en este Pagaré. <br />
+
+                El presente Pagaré será cancelado y devuelto luego de haber sido pagado en su integridad.<br />
+
+                El presente Pagaré se encuentra regulado y deberá ser interpretado conforme a las disposiciones legales aplicables que se encuentran vigentes en la República del Perú. En particular, 
+                sin que la presente enumeración tenga carácter limitativo, serán aplicables al presente pagaré las disposiciones contenidas en la Ley de Títulos Valores, el Código Civil y el Código Procesal Civil, 
+                así como las disposiciones legales que las sustituyan en el futuro, salvo aquellas disposiciones de carácter supletorio que fuesen inconsistentes con el texto expreso del mismo.<br />
+            </p>
+
+            <p>
+                <b/> <strong>NOMBRE:</strong> <strong th:text="${nombre}"></strong><br/>
+                <b/> <strong>DOCUMENTO DE IDENTIDAD:</strong> <strong th:text="${dni}"></strong><br/>
+                <b/> <strong>DOMICILIO:</strong> <strong th:text="${direccion}"></strong><br/>
+            </p>
+
+        </main>
+    </body>
+</html>
+

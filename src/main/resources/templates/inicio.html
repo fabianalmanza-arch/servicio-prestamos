@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>Inicio - Sistema de Préstamos</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+        <link rel="stylesheet" th:href="@{/css/inicio.css}">
+        <link rel="icon" type="image/png" th:href="@{/images/solologo.png}">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        
+        <meta name="_csrf" th:content="${_csrf.token}"/>
+        <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    </head>
+    <body>
+
+        <!-- Navbar -->
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+        <div class="container mt-5">
+            <h2 class="text-center mb-4">Panel de Inicio</h2>
+
+            <!-- ============================================
+     SECCIÓN COMBINADA: EMPLEADOS + BANCOS
+     ============================================ -->
+            <section class="mb-5">
+                <div class="row g-4">
+                    <!-- 🧍 Gestión de Empleados -->
+                    <div class="col-12 col-md-6">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header bg-dark text-white text-center">
+                                <h5 class="mb-0">Gestión de Empleados</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle text-center">
+                                        <thead class="table-secondary">
+                                            <tr>
+                                                <th>Empleado</th>
+                                                <th>Estado</th>
+                                                <th>Acción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="empleado : ${empleados}">
+                                                <td th:text="${empleado.nombreCompleto}"></td>
+                                                <td>
+                                                    <span th:text="${empleado.activo ? 'Activo' : 'Inactivo'}"
+                                                          th:classappend="${empleado.activo ? 'text-success fw-semibold' : 'text-danger fw-semibold'}"></span>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm"
+                                                            th:classappend="${empleado.activo ? 'btn-outline-danger' : 'btn-outline-success'}"
+                                                            th:text="${empleado.activo ? 'Desactivar' : 'Activar'}"
+                                                            th:attr="onclick=${empleado.activo} ?
+                                                            |desactivarEmpleado(${empleado.id})| :
+                                                            |abrirModalActivar(${empleado.id}, '${empleado.nombreCompleto}')|">
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 💰 Cuentas Bancarias -->
+                    <div class="col-12 col-md-6">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header bg-primary text-white text-center">
+                                <h5 class="mb-0">Cuentas Bancarias</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped align-middle text-center">
+                                        <thead class="table-secondary">
+                                            <tr>
+                                                <th>Banco</th>
+                                                <th>Saldo</th>
+                                                <th>Acción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="cuenta : ${cuentas}">
+                                                <td th:text="${cuenta.nombre}"></td>
+                                                <td>$ <span th:text="${#numbers.formatDecimal(cuenta.saldo, 1, 'COMMA', 2, 'POINT')}"></span></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary"
+                                                            th:attr="onclick=|abrirModalSaldo(${cuenta.id}, '${cuenta.nombre}', ${cuenta.saldo})|">
+                                                        Actualizar
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 🔹 MODAL: ACTUALIZAR SALDO -->
+            <div class="modal fade" id="modalSaldo" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content shadow">
+                  <div class="modal-header text-white" id="modalSaldoHeader">
+                    <h5 class="modal-title">Actualizar Saldo Bancario</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">
+                    <!-- Sin th:action, lo manejamos con JS -->
+                    <form id="formSaldo">
+                      <input type="hidden" name="id" id="saldoId">
+                      <label class="form-label">Banco:</label>
+                      <input type="text" id="saldoBanco" class="form-control" readonly>
+
+                      <label class="form-label mt-3">Nuevo Saldo:</label>
+                      <input type="number" step="0.01" min="0" name="nuevoSaldo" id="nuevoSaldo" class="form-control" required>
+
+                      <div class="mt-4 text-end">
+                        <button type="submit" class="btn btn-success">Guardar</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 🔹 MODAL: ACTIVAR EMPLEADO -->
+            <div class="modal fade" id="modalActivar" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content shadow">
+                        <div class="modal-header bg-dark text-white">
+                            <h5 class="modal-title">Activar Empleado</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="empleadoIdActivar">
+                            <p id="nombreEmpleadoActivar" class="fw-semibold"></p>
+
+                            <label class="form-label">Monto Inicial:</label>
+                            <input type="number" id="montoInicialActivar" class="form-control" step="0.01" min="0" placeholder="Ej: 1000.00" required>
+
+                            <div class="mt-4 text-end">
+                                <button type="button" class="btn btn-success" onclick="confirmarActivacion()">Activar</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ============================================
+            SECCIÓN: GASTOS
+            ============================================ -->
+            <section class="mb-5">
+              <h4 class="text-center mb-4">Registro de Gastos</h4>
+
+              <!-- 🔹 Barra superior: botón + búsqueda -->
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalGasto">
+                  + Agregar Gasto
+                </button>
+                <input type="text" id="buscarGasto" class="form-control w-25" placeholder="Buscar gasto...">
+              </div>
+
+              <!-- 🔹 Tabla de gastos -->
+              <div class="card shadow-sm">
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table table-hover align-middle text-center" id="tablaGastos">
+                      <thead class="table-secondary">
+                        <tr>
+                          <th>Fecha</th>
+                          <th>Motivo</th>
+                          <th>Cuenta</th>
+                          <th>Tipo</th>
+                          <th>Cantidad</th>
+                          <th>Observaciones</th>
+                          <th>Acción</th>
+                        </tr>
+                      </thead>
+                      <tbody id="bodyGastos">
+                        <!-- Los datos se cargan por JS -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ============================================
+            MODAL: REGISTRAR GASTO
+            ============================================ -->
+            <div class="modal fade" id="modalGasto" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content shadow">
+                  <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Registrar Gasto</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form id="formGasto">
+                      <label class="form-label">Fecha:</label>
+                      <input type="date" id="gastoFecha" class="form-control" required value="{{today}}">
+
+                      <label class="form-label mt-3">Motivo:</label>
+                      <input type="text" id="gastoMotivo" class="form-control" placeholder="Ej: Arriendo, luz, pago empleado..." required>
+
+                      <label class="form-label mt-3">Cantidad:</label>
+                      <input type="number" id="gastoCantidad" class="form-control" step="0.01" min="0.01" required>
+
+                      <label class="form-label mt-3">Cuenta:</label>
+                      <select id="gastoCuenta" class="form-select" required>
+                        <option value="">Seleccione cuenta...</option>
+                        <option value="Plin">Plin</option>
+                        <option value="Interbank">Interbank</option>
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="BCP">BCP</option>
+                      </select>
+
+                      <label class="form-label mt-3">Tipo de gasto:</label>
+                      <select id="gastoTipo" class="form-select" required>
+                        <option value="operativo">Operativo</option>
+                        <option value="trabajador">Trabajador</option>
+                      </select>
+                      
+                      <!-- 🔹 Selección de empleado (solo para tipo trabajador) -->
+                        <div class="mb-3 mt-3" id="grupoEmpleado" style="display:none;">
+                          <label class="form-label">Empleado:</label>
+                          <select id="gastoEmpleado" class="form-select">
+                            <option value="">Seleccione empleado...</option>
+                            <option th:each="e : ${empleados}" th:value="${e.id}" th:text="${e.nombreCompleto}"></option>
+                          </select>
+                        </div>
+
+                      <label class="form-label mt-3">Observaciones:</label>
+                      <textarea id="gastoObs" class="form-control" rows="2"></textarea>
+
+                      <div class="mt-4 text-end">
+                        <button type="submit" class="btn btn-success">Guardar</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ============================================
+            SECCIÓN: RESUMEN Y CLIENTES
+            ============================================ -->
+            <section class="mb-5">
+                <h4 class="text-center mb-4">Resumen y Seguimiento de Empleados</h4>
+
+                <!-- 🔹 Filtros -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label">Empleado:</label>
+                                <select id="filtroEmpleado" class="form-select" required>
+                                    <option value="">Seleccione...</option>
+                                    <option th:each="e : ${empleados}" th:value="${e.id}" th:text="${e.nombreCompleto}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Desde:</label>
+                                <input type="date" id="filtroDesde" class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Hasta:</label>
+                                <input type="date" id="filtroHasta" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 🔹 Tarjetas de resumen -->
+                <div class="row g-4" id="resumenCards" style="display:none;">
+                    <div class="col-md-4">
+                        <div class="card shadow-sm text-center border-success">
+                            <div class="card-body">
+                                <h6 class="text-muted">Total Cobrado</h6>
+                                <h3 class="text-success fw-bold" id="txtTotalCobrado">$0.00</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card shadow-sm text-center border-danger">
+                            <div class="card-body">
+                                <h6 class="text-muted">Clientes Atrasados (+2 días)</h6>
+                                <h3 class="text-danger fw-bold" id="txtAtrasados">0</h3>
+                                <button class="btn btn-outline-danger btn-sm mt-2" onclick="verDetalle('atrasados')">Ver detalle</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card shadow-sm text-center border-warning">
+                            <div class="card-body">
+                                <h6 class="text-muted">Clientes Sin Pago Hoy</h6>
+                                <h3 class="text-warning fw-bold" id="txtSinPago">0</h3>
+                                <button class="btn btn-outline-warning btn-sm mt-2" onclick="verDetalle('sinPago')">Ver detalle</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 🔹 MODAL DETALLES -->
+            <div class="modal fade" id="modalDetalle" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content shadow">
+                        <div class="modal-header bg-dark text-white">
+                            <h5 class="modal-title" id="tituloDetalle">Detalle</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <ul id="listaDetalle" class="list-group small"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================
+             SCRIPTS
+             ============================ -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // ==========================
+            // 💰 Modal Actualizar Saldo
+            // ==========================
+            const modalSaldo = new bootstrap.Modal(document.getElementById('modalSaldo'));
+
+            function abrirModalSaldo(id, banco, saldo) {
+              document.getElementById('saldoId').value = id;
+              document.getElementById('saldoBanco').value = banco;
+              document.getElementById('nuevoSaldo').value = saldo;
+
+              // Cambiar color del encabezado según banco
+              const header = document.getElementById('modalSaldoHeader');
+              header.className = 'modal-header text-white';
+              switch (banco.toLowerCase()) {
+                case 'bcp':
+                  header.classList.add('bg-primary'); // azul
+                  break;
+                case 'interbank':
+                  header.classList.add('bg-success'); // verde
+                  break;
+                case 'plin':
+                  header.classList.add('bg-warning'); // amarillo
+                  header.classList.remove('text-white');
+                  break;
+                default:
+                  header.classList.add('bg-secondary'); // gris (efectivo u otros)
+              }
+
+              modalSaldo.show();
+            }
+
+            // Enviar actualización sin recargar
+            document.getElementById("formSaldo").addEventListener("submit", async function(e) {
+              e.preventDefault();
+
+              const id = document.getElementById("saldoId").value;
+              const nuevoSaldo = document.getElementById("nuevoSaldo").value;
+              const banco = document.getElementById("saldoBanco").value;
+
+              if (!nuevoSaldo || nuevoSaldo < 0) {
+                Swal.fire({
+                  icon: "warning",
+                  title: "Valor no válido",
+                  text: "Por favor ingresa un saldo mayor o igual a 0.",
+                  confirmButtonColor: "#3085d6"
+                });
+                return;
+              }
+
+              try {
+                const token = document.querySelector('meta[name="_csrf"]').content;
+                    const header = document.querySelector('meta[name="_csrf_header"]').content;
+
+                    const resp = await fetch(`/cuentas/actualizar-saldo?id=${id}&nuevoSaldo=${nuevoSaldo}`, {
+                      method: "POST",
+                      headers: {
+                        [header]: token
+                      }
+                    });
+
+                if (resp.ok) {
+                  const msg = await resp.text();
+                  Swal.fire({
+                    icon: "success",
+                    title: "Saldo actualizado",
+                    text: msg,
+                    confirmButtonColor: "#28a745",
+                    timer: 1800,
+                    showConfirmButton: false
+                  });
+
+                  const modal = bootstrap.Modal.getInstance(document.getElementById('modalSaldo'));
+                  modal.hide();
+
+                  // Actualizar el valor en la tabla sin recargar
+                  const fila = document.querySelector(`button[onclick*='${id}']`).closest('tr');
+                  const saldoCell = fila.querySelector('span');
+                  saldoCell.textContent = parseFloat(nuevoSaldo).toLocaleString('es-CO', { minimumFractionDigits: 2 });
+
+                } else {
+                  const errorMsg = await resp.text();
+                  Swal.fire({
+                    icon: "error",
+                    title: "Error al actualizar",
+                    text: errorMsg,
+                    confirmButtonColor: "#d33"
+                  });
+                }
+              } catch (err) {
+                Swal.fire({
+                  icon: "error",
+                  title: "Error de conexión",
+                  text: "No se pudo contactar con el servidor.",
+                  confirmButtonColor: "#d33"
+                });
+              }
+            });
+
+            // ==========================
+            // 👤 Modal Activar Empleado
+            // ==========================
+            const modalActivar = new bootstrap.Modal(document.getElementById('modalActivar'));
+
+            function abrirModalActivar(id, nombre) {
+            document.getElementById('empleadoIdActivar').value = id;
+            document.getElementById('nombreEmpleadoActivar').textContent = `Empleado: ${nombre}`;
+            document.getElementById('montoInicialActivar').value = '';
+            modalActivar.show();
+            }
+
+            function confirmarActivacion() {
+            const id = document.getElementById('empleadoIdActivar').value;
+            const monto = document.getElementById('montoInicialActivar').value;
+            if (!monto || monto <= 0) {
+            Swal.fire('Monto requerido', 'Debes ingresar un monto inicial.', 'warning');
+            return;
+            }
+
+            fetch('/empleados/activar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `id=${id}&montoInicial=${monto}`
+            })
+            .then(res => res.text())
+            .then(msg => {
+            Swal.fire('Activado', msg, 'success').then(() => location.reload());
+            })
+            .catch(() => Swal.fire('Error', 'No se pudo activar el empleado.', 'error'));
+            }
+
+            // ==========================
+            // 🚫 Desactivar Empleado
+            // ==========================
+            function desactivarEmpleado(id) {
+            Swal.fire({
+            title: "¿Desactivar empleado?",
+            text: "El empleado quedará inactivo hasta que lo reactives.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Sí, desactivar",
+            cancelButtonText: "Cancelar",
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6"
+            }).then((result) => {
+            if (result.isConfirmed) {
+            fetch(`/empleados/desactivar/${id}`, {
+            method: 'POST'
+            })
+            .then(res => res.text())
+            .then(msg => {
+            Swal.fire('Desactivado', msg, 'info').then(() => location.reload());
+            })
+            .catch(() => Swal.fire('Error', 'No se pudo desactivar el empleado.', 'error'));
+            }
+            });
+            }
+
+            const modalDetalle = new bootstrap.Modal(document.getElementById('modalDetalle'));
+            let datosActuales = { atrasados: [], sinPago: [] };
+
+            // Cargar automáticamente al cambiar filtros
+            ['filtroEmpleado', 'filtroDesde', 'filtroHasta'].forEach(id => {
+            document.getElementById(id).addEventListener('change', cargarResumen);
+            });
+
+            async function cargarResumen() {
+            const empleadoId = document.getElementById('filtroEmpleado').value;
+            const desde = document.getElementById('filtroDesde').value;
+            const hasta = document.getElementById('filtroHasta').value;
+
+            if (!empleadoId) return;
+
+            const resp = await fetch(`/api/resumen?empleadoId=${empleadoId}&desde=${desde}&hasta=${hasta}`);
+            const data = await resp.json();
+
+            document.getElementById('resumenCards').style.display = 'flex';
+            document.getElementById('txtTotalCobrado').textContent = `$${data.totalCobrado.toFixed(2)}`;
+            document.getElementById('txtAtrasados').textContent = data.clientesAtrasados.length;
+            document.getElementById('txtSinPago').textContent = data.clientesSinPagoHoy.length;
+
+            datosActuales.atrasados = data.clientesAtrasados;
+            datosActuales.sinPago = data.clientesSinPagoHoy;
+            }
+
+            // Abrir modal con detalle
+            function verDetalle(tipo) {
+            const lista = document.getElementById('listaDetalle');
+            lista.innerHTML = '';
+
+            const datos = datosActuales[tipo] || [];
+            if (datos.length === 0) {
+            lista.innerHTML = '<li class="list-group-item text-muted text-center">Sin registros</li>';
+            } else {
+            datos.forEach(c => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item';
+            li.textContent = c;
+            lista.appendChild(li);
+            });
+            }
+
+            document.getElementById('tituloDetalle').textContent =
+            tipo === 'atrasados' ? 'Clientes Atrasados' : 'Clientes Sin Pago Hoy';
+            modalDetalle.show();
+            }         
+            
+            // ===============================
+            // 💸 Gestión de Gastos
+            // ===============================
+
+            const modalGasto = new bootstrap.Modal(document.getElementById('modalGasto'));
+            const formGasto = document.getElementById('formGasto');
+            const bodyGastos = document.getElementById('bodyGastos');
+            const buscarGasto = document.getElementById('buscarGasto');
+
+            let paginaActual = 1;
+            const itemsPorPagina = 8;
+            let gastosGlobal = [];
+
+            // 📄 Generar PDF
+            function generarPDF(id) {
+              window.open(`/api/gastos/pdf/${id}`, '_blank');
+            }
+
+            // 🔹 Mostrar/ocultar campo empleado según tipo de gasto
+            const selectTipoGasto = document.getElementById('gastoTipo');
+            const grupoEmpleado = document.getElementById('grupoEmpleado');
+            const selectEmpleado = document.getElementById('gastoEmpleado');
+
+            selectTipoGasto.addEventListener('change', () => {
+              if (selectTipoGasto.value === 'trabajador') {
+                grupoEmpleado.style.display = 'block';
+              } else {
+                grupoEmpleado.style.display = 'none';
+                selectEmpleado.value = '';
+              }
+            });
+
+            // 🔄 Cargar todos los gastos al inicio
+            document.addEventListener('DOMContentLoaded', cargarGastos);
+
+            async function cargarGastos() {
+              const resp = await fetch('/api/gastos');
+              gastosGlobal = await resp.json();
+              paginaActual = 1;
+              renderGastos(gastosGlobal);
+            }
+
+            // 🔍 Filtrar en tiempo real
+            buscarGasto.addEventListener('input', () => {
+              paginaActual = 1;
+              renderGastos(gastosGlobal);
+            });
+
+            // 📋 Renderizar tabla con búsqueda + paginación
+            function renderGastos(gastos) {
+              const filtro = buscarGasto.value.toLowerCase();
+              const gastosFiltrados = gastos.filter(
+                g =>
+                  g.motivo.toLowerCase().includes(filtro) ||
+                  g.cuenta.toLowerCase().includes(filtro)
+              );
+
+              const totalPaginas = Math.ceil(gastosFiltrados.length / itemsPorPagina);
+              if (paginaActual > totalPaginas) paginaActual = totalPaginas || 1;
+
+              const inicio = (paginaActual - 1) * itemsPorPagina;
+              const fin = inicio + itemsPorPagina;
+              const paginaGastos = gastosFiltrados.slice(inicio, fin);
+
+              bodyGastos.innerHTML = '';
+
+              paginaGastos.forEach(g => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                  <td>${g.fecha}</td>
+                  <td>${g.motivo}</td>
+                  <td>${g.cuenta}</td>
+                  <td>${g.tipo}</td>
+                  <td>$${g.cantidad.toFixed(2)}</td>
+                  <td>${g.observaciones || '-'}</td>
+                  <td class="d-flex justify-content-center gap-2">
+                    <button class="btn btn-sm btn-outline-primary" onclick="generarPDF(${g.id})">
+                      <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="eliminarGasto(${g.id})">
+                      Eliminar
+                    </button>
+                  </td>
+                `;
+                bodyGastos.appendChild(tr);
+              });
+
+              renderPaginacion(totalPaginas);
+            }
+
+            // 🔹 Crear botones de paginación
+            function renderPaginacion(totalPaginas) {
+              let paginacionContainer = document.getElementById('paginacionGastos');
+              if (!paginacionContainer) {
+                paginacionContainer = document.createElement('div');
+                paginacionContainer.id = 'paginacionGastos';
+                paginacionContainer.className = 'd-flex justify-content-center mt-3 gap-2';
+                bodyGastos.parentElement.parentElement.appendChild(paginacionContainer);
+              }
+
+              paginacionContainer.innerHTML = '';
+              if (totalPaginas <= 1) return;
+
+              for (let i = 1; i <= totalPaginas; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i;
+                btn.className = `btn btn-sm ${i === paginaActual ? 'btn-primary' : 'btn-outline-primary'}`;
+                btn.onclick = () => {
+                  paginaActual = i;
+                  renderGastos(gastosGlobal);
+                };
+                paginacionContainer.appendChild(btn);
+              }
+            }
+
+            // 💾 Guardar gasto
+            formGasto.addEventListener('submit', async e => {
+              e.preventDefault();
+
+              const gasto = {
+                fecha: document.getElementById('gastoFecha').value,
+                motivo: document.getElementById('gastoMotivo').value,
+                cantidad: parseFloat(document.getElementById('gastoCantidad').value),
+                cuenta: document.getElementById('gastoCuenta').value,
+                tipo: document.getElementById('gastoTipo').value,
+                observaciones: document.getElementById('gastoObs').value,
+                empleado: null
+              };
+
+              // 🔸 Si es tipo trabajador, debe tener empleado seleccionado
+              if (gasto.tipo === 'trabajador') {
+                const empleadoId = selectEmpleado.value;
+                if (!empleadoId) {
+                  Swal.fire("Empleado requerido", "Debe seleccionar el empleado correspondiente.", "warning");
+                  return;
+                }
+                gasto.empleado = { id: parseInt(empleadoId) };
+              }
+
+              // Validaciones básicas
+              if (!gasto.fecha || !gasto.motivo || !gasto.cantidad || !gasto.cuenta) {
+                Swal.fire("Campos incompletos", "Por favor completa todos los campos requeridos.", "warning");
+                return;
+              }
+
+              // 💰 Verificar saldo antes de guardar
+              const saldoResp = await fetch(`/cuentas/saldo?nombre=${encodeURIComponent(gasto.cuenta)}`);
+              const saldo = await saldoResp.json();
+
+              if (gasto.cantidad > saldo) {
+                Swal.fire({
+                  icon: "warning",
+                  title: "Saldo insuficiente",
+                  text: `La cuenta ${gasto.cuenta} solo tiene $${saldo.toFixed(2)} disponibles.`,
+                  confirmButtonColor: "#d33"
+                });
+                return;
+              }
+
+              try {
+                const resp = await fetch('/api/gastos', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(gasto)
+                });
+
+                if (resp.ok) {
+                  // 💰 Restar saldo automáticamente
+                  await fetch(`/cuentas/restar-saldo?nombre=${encodeURIComponent(gasto.cuenta)}&monto=${gasto.cantidad}`, { method: 'POST' });
+
+                  Swal.fire("Guardado", "El gasto fue registrado correctamente.", "success");
+                  formGasto.reset();
+                  grupoEmpleado.style.display = 'none'; // Oculta el campo empleado si estaba visible
+                  modalGasto.hide();
+                  cargarGastos();
+                } else {
+                  Swal.fire("Error", "No se pudo guardar el gasto.", "error");
+                }
+              } catch (err) {
+                Swal.fire("Error", "No se pudo conectar al servidor.", "error");
+              }
+            });
+
+            // 🗑️ Eliminar gasto
+            async function eliminarGasto(id) {
+              Swal.fire({
+                title: "¿Eliminar gasto?",
+                text: "Esta acción no se puede deshacer.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Sí, eliminar",
+                cancelButtonText: "Cancelar",
+                confirmButtonColor: "#d33"
+              }).then(async result => {
+                if (result.isConfirmed) {
+                  await fetch(`/api/gastos/${id}`, { method: 'DELETE' });
+                  Swal.fire("Eliminado", "El gasto fue eliminado.", "success");
+                  cargarGastos();
+                }
+              });
+            }
+        </script>
+
+    </body>
+</html>

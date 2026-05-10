@@ -1,0 +1,24 @@
+/* === Estilo del navbar === */
+.navbar {
+  transition: background-color 0.3s ease;
+}
+
+/* Fondo translúcido al pasar el mouse sobre logo o enlaces */
+.navbar-brand:hover,
+.navbar-nav .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  transition: background-color 0.3s ease;
+}
+
+/* Margen superior para compensar navbar fijo */
+body {
+  padding-top: 70px;
+}
+
+/* (Opcional) Para resaltar el link activo */
+.nav-link.active {
+  background-color: rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+}
+

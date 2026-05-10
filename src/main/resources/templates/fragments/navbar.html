@@ -1,0 +1,28 @@
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm fixed-top">
+    
+    <!-- Agregamos el CSS solo para el navbar -->
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    
+  <div class="container-fluid">
+    <a class="navbar-brand d-flex align-items-center" th:href="@{/}">
+      <img th:src="@{/images/solologo.png}" alt="Logo" 
+           style="height: 30px; width: auto;" 
+           class="me-3 rounded"> PayControl
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" th:href="@{/}">Inicio</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/clientes}">Clientes</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/empleados}">Empleados</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/prestamos}">Préstamos</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/pagos}">Pagos</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>

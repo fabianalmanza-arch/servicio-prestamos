@@ -1,0 +1,28 @@
+<h2 th:text="'Cronograma - ' + ${prestamo.cliente.nombre}"></h2>
+<table>
+    <thead>
+        <tr>
+            <th>Cuota</th><th>Fecha teórica</th><th>Capital</th><th>Interés</th><th>Total</th><th>Saldo</th><th>Pagos</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="c : ${cronograma}">
+            <td th:text="${c.numero}"></td>
+            <td th:text="${#dates.format(c.fechaTeorica,'dd/MM/yyyy')}"></td>
+            <td th:text="${c.capital}"></td>
+            <td th:text="${c.interes}"></td>
+            <td th:text="${c.total}"></td>
+            <td th:text="${c.saldo}"></td>
+            <td>
+                <ul>
+                    <li th:each="p : ${c.pagos}">
+                        <span th:text="${#dates.format(p.fechaPago,'dd/MM/yyyy HH:mm')} + ' - ' + p.monto + ' - ' + p.metodoPago"></span>
+                        <span th:if="${p.numeroOperacion != null}"> (Op: <span th:text="${p.numeroOperacion}"></span>)</span>
+                    </li>
+                </ul>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<a th:href="@{/cronograma/exportar/pdf(prestamoId=${prestamo.id})}">Descargar PDF</a> 
